@@ -1,0 +1,797 @@
+{
+  "tools": [
+    {
+      "name": "github.list_issues",
+      "server": "github",
+      "tool": "list_issues",
+      "description": "List issues in a GitHub repository, optionally filtered by state, assignee, or labels.",
+      "args": "owner, repo, state, assignee, labels",
+      "embed_text": "github.list_issues: List issues in a GitHub repository, optionally filtered by state, assignee, or labels. Args: owner, repo, state, assignee, labels."
+    },
+    {
+      "name": "github.get_issue",
+      "server": "github",
+      "tool": "get_issue",
+      "description": "Get a single issue by number from a GitHub repo.",
+      "args": "owner, repo, issue_number",
+      "embed_text": "github.get_issue: Get a single issue by number from a GitHub repo. Args: owner, repo, issue_number."
+    },
+    {
+      "name": "github.create_issue",
+      "server": "github",
+      "tool": "create_issue",
+      "description": "Create a new GitHub issue with title and body.",
+      "args": "owner, repo, title, body, labels",
+      "embed_text": "github.create_issue: Create a new GitHub issue with title and body. Args: owner, repo, title, body, labels."
+    },
+    {
+      "name": "github.add_issue_comment",
+      "server": "github",
+      "tool": "add_issue_comment",
+      "description": "Post a comment on an existing GitHub issue.",
+      "args": "owner, repo, issue_number, body",
+      "embed_text": "github.add_issue_comment: Post a comment on an existing GitHub issue. Args: owner, repo, issue_number, body."
+    },
+    {
+      "name": "github.list_pull_requests",
+      "server": "github",
+      "tool": "list_pull_requests",
+      "description": "List pull requests in a GitHub repo, filtered by state.",
+      "args": "owner, repo, state",
+      "embed_text": "github.list_pull_requests: List pull requests in a GitHub repo, filtered by state. Args: owner, repo, state."
+    },
+    {
+      "name": "github.get_pull_request",
+      "server": "github",
+      "tool": "get_pull_request",
+      "description": "Fetch a single pull request by number.",
+      "args": "owner, repo, pr_number",
+      "embed_text": "github.get_pull_request: Fetch a single pull request by number. Args: owner, repo, pr_number."
+    },
+    {
+      "name": "github.merge_pull_request",
+      "server": "github",
+      "tool": "merge_pull_request",
+      "description": "Merge a GitHub pull request.",
+      "args": "owner, repo, pr_number, merge_method",
+      "embed_text": "github.merge_pull_request: Merge a GitHub pull request. Args: owner, repo, pr_number, merge_method."
+    },
+    {
+      "name": "github.create_pull_request_review",
+      "server": "github",
+      "tool": "create_pull_request_review",
+      "description": "Submit a review (approve/comment/request_changes) on a PR.",
+      "args": "owner, repo, pr_number, event, body",
+      "embed_text": "github.create_pull_request_review: Submit a review (approve/comment/request_changes) on a PR. Args: owner, repo, pr_number, event, body."
+    },
+    {
+      "name": "github.list_commits",
+      "server": "github",
+      "tool": "list_commits",
+      "description": "List commits on a branch.",
+      "args": "owner, repo, branch",
+      "embed_text": "github.list_commits: List commits on a branch. Args: owner, repo, branch."
+    },
+    {
+      "name": "github.search_code",
+      "server": "github",
+      "tool": "search_code",
+      "description": "Search code across GitHub.",
+      "args": "query, repo",
+      "embed_text": "github.search_code: Search code across GitHub. Args: query, repo."
+    },
+    {
+      "name": "github.get_file_contents",
+      "server": "github",
+      "tool": "get_file_contents",
+      "description": "Read a file from a GitHub repo at a path.",
+      "args": "owner, repo, path, ref",
+      "embed_text": "github.get_file_contents: Read a file from a GitHub repo at a path. Args: owner, repo, path, ref."
+    },
+    {
+      "name": "github.create_or_update_file",
+      "server": "github",
+      "tool": "create_or_update_file",
+      "description": "Create or update a file in a GitHub repo via the API.",
+      "args": "owner, repo, path, content, message, branch",
+      "embed_text": "github.create_or_update_file: Create or update a file in a GitHub repo via the API. Args: owner, repo, path, content, message, branch."
+    },
+    {
+      "name": "github.list_branches",
+      "server": "github",
+      "tool": "list_branches",
+      "description": "List branches in a GitHub repo.",
+      "args": "owner, repo",
+      "embed_text": "github.list_branches: List branches in a GitHub repo. Args: owner, repo."
+    },
+    {
+      "name": "github.create_branch",
+      "server": "github",
+      "tool": "create_branch",
+      "description": "Create a new branch from a base ref.",
+      "args": "owner, repo, branch_name, from_ref",
+      "embed_text": "github.create_branch: Create a new branch from a base ref. Args: owner, repo, branch_name, from_ref."
+    },
+    {
+      "name": "github.search_issues",
+      "server": "github",
+      "tool": "search_issues",
+      "description": "Search GitHub issues across repos.",
+      "args": "query",
+      "embed_text": "github.search_issues: Search GitHub issues across repos. Args: query."
+    },
+    {
+      "name": "filesystem.read_file",
+      "server": "filesystem",
+      "tool": "read_file",
+      "description": "Read the contents of a file from the local filesystem.",
+      "args": "path",
+      "embed_text": "filesystem.read_file: Read the contents of a file from the local filesystem. Args: path."
+    },
+    {
+      "name": "filesystem.write_file",
+      "server": "filesystem",
+      "tool": "write_file",
+      "description": "Write content to a file on the local filesystem.",
+      "args": "path, content",
+      "embed_text": "filesystem.write_file: Write content to a file on the local filesystem. Args: path, content."
+    },
+    {
+      "name": "filesystem.edit_file",
+      "server": "filesystem",
+      "tool": "edit_file",
+      "description": "Apply edits to an existing file by replacing strings.",
+      "args": "path, edits",
+      "embed_text": "filesystem.edit_file: Apply edits to an existing file by replacing strings. Args: path, edits."
+    },
+    {
+      "name": "filesystem.list_directory",
+      "server": "filesystem",
+      "tool": "list_directory",
+      "description": "List entries (files and subdirectories) in a directory.",
+      "args": "path",
+      "embed_text": "filesystem.list_directory: List entries (files and subdirectories) in a directory. Args: path."
+    },
+    {
+      "name": "filesystem.create_directory",
+      "server": "filesystem",
+      "tool": "create_directory",
+      "description": "Create a new directory on the local filesystem.",
+      "args": "path",
+      "embed_text": "filesystem.create_directory: Create a new directory on the local filesystem. Args: path."
+    },
+    {
+      "name": "filesystem.move_file",
+      "server": "filesystem",
+      "tool": "move_file",
+      "description": "Move or rename a file or directory.",
+      "args": "source, destination",
+      "embed_text": "filesystem.move_file: Move or rename a file or directory. Args: source, destination."
+    },
+    {
+      "name": "filesystem.search_files",
+      "server": "filesystem",
+      "tool": "search_files",
+      "description": "Search for files by name pattern recursively.",
+      "args": "root, pattern",
+      "embed_text": "filesystem.search_files: Search for files by name pattern recursively. Args: root, pattern."
+    },
+    {
+      "name": "filesystem.get_file_info",
+      "server": "filesystem",
+      "tool": "get_file_info",
+      "description": "Get metadata (size, mtime, type) for a path.",
+      "args": "path",
+      "embed_text": "filesystem.get_file_info: Get metadata (size, mtime, type) for a path. Args: path."
+    },
+    {
+      "name": "slack.post_message",
+      "server": "slack",
+      "tool": "post_message",
+      "description": "Post a message to a Slack channel.",
+      "args": "channel, text, thread_ts",
+      "embed_text": "slack.post_message: Post a message to a Slack channel. Args: channel, text, thread_ts."
+    },
+    {
+      "name": "slack.reply_to_thread",
+      "server": "slack",
+      "tool": "reply_to_thread",
+      "description": "Reply in a Slack message thread.",
+      "args": "channel, thread_ts, text",
+      "embed_text": "slack.reply_to_thread: Reply in a Slack message thread. Args: channel, thread_ts, text."
+    },
+    {
+      "name": "slack.list_channels",
+      "server": "slack",
+      "tool": "list_channels",
+      "description": "List Slack channels the bot is in.",
+      "args": "",
+      "embed_text": "slack.list_channels: List Slack channels the bot is in."
+    },
+    {
+      "name": "slack.get_channel_history",
+      "server": "slack",
+      "tool": "get_channel_history",
+      "description": "Fetch recent messages from a Slack channel.",
+      "args": "channel, limit",
+      "embed_text": "slack.get_channel_history: Fetch recent messages from a Slack channel. Args: channel, limit."
+    },
+    {
+      "name": "slack.add_reaction",
+      "server": "slack",
+      "tool": "add_reaction",
+      "description": "Add an emoji reaction to a Slack message.",
+      "args": "channel, ts, name",
+      "embed_text": "slack.add_reaction: Add an emoji reaction to a Slack message. Args: channel, ts, name."
+    },
+    {
+      "name": "slack.search_messages",
+      "server": "slack",
+      "tool": "search_messages",
+      "description": "Search Slack messages by text.",
+      "args": "query",
+      "embed_text": "slack.search_messages: Search Slack messages by text. Args: query."
+    },
+    {
+      "name": "slack.list_users",
+      "server": "slack",
+      "tool": "list_users",
+      "description": "List Slack workspace users.",
+      "args": "",
+      "embed_text": "slack.list_users: List Slack workspace users."
+    },
+    {
+      "name": "postgres.query",
+      "server": "postgres",
+      "tool": "query",
+      "description": "Execute a read-only SQL query against a Postgres database.",
+      "args": "sql",
+      "embed_text": "postgres.query: Execute a read-only SQL query against a Postgres database. Args: sql."
+    },
+    {
+      "name": "postgres.list_tables",
+      "server": "postgres",
+      "tool": "list_tables",
+      "description": "List tables in the connected Postgres database.",
+      "args": "schema",
+      "embed_text": "postgres.list_tables: List tables in the connected Postgres database. Args: schema."
+    },
+    {
+      "name": "postgres.describe_table",
+      "server": "postgres",
+      "tool": "describe_table",
+      "description": "Get column types and constraints for a Postgres table.",
+      "args": "table",
+      "embed_text": "postgres.describe_table: Get column types and constraints for a Postgres table. Args: table."
+    },
+    {
+      "name": "postgres.explain",
+      "server": "postgres",
+      "tool": "explain",
+      "description": "Run EXPLAIN on a SQL query to get the plan.",
+      "args": "sql",
+      "embed_text": "postgres.explain: Run EXPLAIN on a SQL query to get the plan. Args: sql."
+    },
+    {
+      "name": "brave_search.web_search",
+      "server": "brave_search",
+      "tool": "web_search",
+      "description": "Search the web for a query using Brave Search.",
+      "args": "query, count",
+      "embed_text": "brave_search.web_search: Search the web for a query using Brave Search. Args: query, count."
+    },
+    {
+      "name": "brave_search.news_search",
+      "server": "brave_search",
+      "tool": "news_search",
+      "description": "Search recent news articles for a query.",
+      "args": "query",
+      "embed_text": "brave_search.news_search: Search recent news articles for a query. Args: query."
+    },
+    {
+      "name": "brave_search.local_search",
+      "server": "brave_search",
+      "tool": "local_search",
+      "description": "Search local businesses near a location.",
+      "args": "query, location",
+      "embed_text": "brave_search.local_search: Search local businesses near a location. Args: query, location."
+    },
+    {
+      "name": "gmail.send_email",
+      "server": "gmail",
+      "tool": "send_email",
+      "description": "Send an email via Gmail.",
+      "args": "to, subject, body, cc",
+      "embed_text": "gmail.send_email: Send an email via Gmail. Args: to, subject, body, cc."
+    },
+    {
+      "name": "gmail.list_emails",
+      "server": "gmail",
+      "tool": "list_emails",
+      "description": "List emails matching a query in Gmail.",
+      "args": "query, max_results",
+      "embed_text": "gmail.list_emails: List emails matching a query in Gmail. Args: query, max_results."
+    },
+    {
+      "name": "gmail.get_email",
+      "server": "gmail",
+      "tool": "get_email",
+      "description": "Fetch a single email by ID.",
+      "args": "id",
+      "embed_text": "gmail.get_email: Fetch a single email by ID. Args: id."
+    },
+    {
+      "name": "gmail.create_draft",
+      "server": "gmail",
+      "tool": "create_draft",
+      "description": "Create a draft email in Gmail.",
+      "args": "to, subject, body",
+      "embed_text": "gmail.create_draft: Create a draft email in Gmail. Args: to, subject, body."
+    },
+    {
+      "name": "gmail.search_emails",
+      "server": "gmail",
+      "tool": "search_emails",
+      "description": "Search emails in Gmail using Gmail query syntax.",
+      "args": "query",
+      "embed_text": "gmail.search_emails: Search emails in Gmail using Gmail query syntax. Args: query."
+    },
+    {
+      "name": "gmail.list_labels",
+      "server": "gmail",
+      "tool": "list_labels",
+      "description": "List Gmail labels.",
+      "args": "",
+      "embed_text": "gmail.list_labels: List Gmail labels."
+    },
+    {
+      "name": "gmail.label_email",
+      "server": "gmail",
+      "tool": "label_email",
+      "description": "Apply a label to a Gmail message.",
+      "args": "id, label",
+      "embed_text": "gmail.label_email: Apply a label to a Gmail message. Args: id, label."
+    },
+    {
+      "name": "gdrive.list_files",
+      "server": "gdrive",
+      "tool": "list_files",
+      "description": "List files in a Google Drive folder.",
+      "args": "folder_id",
+      "embed_text": "gdrive.list_files: List files in a Google Drive folder. Args: folder_id."
+    },
+    {
+      "name": "gdrive.read_doc",
+      "server": "gdrive",
+      "tool": "read_doc",
+      "description": "Read the text content of a Google Doc.",
+      "args": "doc_id",
+      "embed_text": "gdrive.read_doc: Read the text content of a Google Doc. Args: doc_id."
+    },
+    {
+      "name": "gdrive.create_doc",
+      "server": "gdrive",
+      "tool": "create_doc",
+      "description": "Create a new Google Doc with content.",
+      "args": "title, content",
+      "embed_text": "gdrive.create_doc: Create a new Google Doc with content. Args: title, content."
+    },
+    {
+      "name": "gdrive.search_drive",
+      "server": "gdrive",
+      "tool": "search_drive",
+      "description": "Search Google Drive by file name or content.",
+      "args": "query",
+      "embed_text": "gdrive.search_drive: Search Google Drive by file name or content. Args: query."
+    },
+    {
+      "name": "time.get_current_time",
+      "server": "time",
+      "tool": "get_current_time",
+      "description": "Get the current time in a given timezone.",
+      "args": "timezone",
+      "embed_text": "time.get_current_time: Get the current time in a given timezone. Args: timezone."
+    },
+    {
+      "name": "time.convert_timezone",
+      "server": "time",
+      "tool": "convert_timezone",
+      "description": "Convert a timestamp from one timezone to another.",
+      "args": "time, from_tz, to_tz",
+      "embed_text": "time.convert_timezone: Convert a timestamp from one timezone to another. Args: time, from_tz, to_tz."
+    },
+    {
+      "name": "time.schedule_reminder",
+      "server": "time",
+      "tool": "schedule_reminder",
+      "description": "Schedule a reminder at a future time.",
+      "args": "when, message",
+      "embed_text": "time.schedule_reminder: Schedule a reminder at a future time. Args: when, message."
+    },
+    {
+      "name": "memory.create_entity",
+      "server": "memory",
+      "tool": "create_entity",
+      "description": "Create a named entity node in the knowledge graph.",
+      "args": "name, type, observations",
+      "embed_text": "memory.create_entity: Create a named entity node in the knowledge graph. Args: name, type, observations."
+    },
+    {
+      "name": "memory.create_relation",
+      "server": "memory",
+      "tool": "create_relation",
+      "description": "Create a relation between two entities.",
+      "args": "from_entity, to_entity, relation_type",
+      "embed_text": "memory.create_relation: Create a relation between two entities. Args: from_entity, to_entity, relation_type."
+    },
+    {
+      "name": "memory.search_nodes",
+      "server": "memory",
+      "tool": "search_nodes",
+      "description": "Search the knowledge graph for entities by query.",
+      "args": "query",
+      "embed_text": "memory.search_nodes: Search the knowledge graph for entities by query. Args: query."
+    },
+    {
+      "name": "memory.open_nodes",
+      "server": "memory",
+      "tool": "open_nodes",
+      "description": "Read full data for a list of entity names.",
+      "args": "names",
+      "embed_text": "memory.open_nodes: Read full data for a list of entity names. Args: names."
+    },
+    {
+      "name": "memory.delete_entity",
+      "server": "memory",
+      "tool": "delete_entity",
+      "description": "Delete an entity from the knowledge graph.",
+      "args": "name",
+      "embed_text": "memory.delete_entity: Delete an entity from the knowledge graph. Args: name."
+    },
+    {
+      "name": "fetch.fetch_url",
+      "server": "fetch",
+      "tool": "fetch_url",
+      "description": "Fetch the content at a URL via HTTP GET.",
+      "args": "url",
+      "embed_text": "fetch.fetch_url: Fetch the content at a URL via HTTP GET. Args: url."
+    },
+    {
+      "name": "fetch.fetch_html",
+      "server": "fetch",
+      "tool": "fetch_html",
+      "description": "Fetch a URL and return HTML.",
+      "args": "url",
+      "embed_text": "fetch.fetch_html: Fetch a URL and return HTML. Args: url."
+    },
+    {
+      "name": "fetch.fetch_text",
+      "server": "fetch",
+      "tool": "fetch_text",
+      "description": "Fetch a URL and return extracted plain text.",
+      "args": "url",
+      "embed_text": "fetch.fetch_text: Fetch a URL and return extracted plain text. Args: url."
+    },
+    {
+      "name": "linear.create_issue",
+      "server": "linear",
+      "tool": "create_issue",
+      "description": "Create a new issue in Linear.",
+      "args": "team, title, description",
+      "embed_text": "linear.create_issue: Create a new issue in Linear. Args: team, title, description."
+    },
+    {
+      "name": "linear.list_issues",
+      "server": "linear",
+      "tool": "list_issues",
+      "description": "List Linear issues filtered by assignee or status.",
+      "args": "assignee, status",
+      "embed_text": "linear.list_issues: List Linear issues filtered by assignee or status. Args: assignee, status."
+    },
+    {
+      "name": "linear.update_issue",
+      "server": "linear",
+      "tool": "update_issue",
+      "description": "Update a Linear issue status or assignee.",
+      "args": "id, status, assignee",
+      "embed_text": "linear.update_issue: Update a Linear issue status or assignee. Args: id, status, assignee."
+    },
+    {
+      "name": "linear.list_teams",
+      "server": "linear",
+      "tool": "list_teams",
+      "description": "List Linear teams.",
+      "args": "",
+      "embed_text": "linear.list_teams: List Linear teams."
+    },
+    {
+      "name": "notion.create_page",
+      "server": "notion",
+      "tool": "create_page",
+      "description": "Create a new Notion page under a parent.",
+      "args": "parent_id, title, content",
+      "embed_text": "notion.create_page: Create a new Notion page under a parent. Args: parent_id, title, content."
+    },
+    {
+      "name": "notion.search_pages",
+      "server": "notion",
+      "tool": "search_pages",
+      "description": "Search Notion pages by title or content.",
+      "args": "query",
+      "embed_text": "notion.search_pages: Search Notion pages by title or content. Args: query."
+    },
+    {
+      "name": "notion.update_page",
+      "server": "notion",
+      "tool": "update_page",
+      "description": "Update properties or content of a Notion page.",
+      "args": "page_id, properties",
+      "embed_text": "notion.update_page: Update properties or content of a Notion page. Args: page_id, properties."
+    },
+    {
+      "name": "notion.list_databases",
+      "server": "notion",
+      "tool": "list_databases",
+      "description": "List Notion databases.",
+      "args": "",
+      "embed_text": "notion.list_databases: List Notion databases."
+    },
+    {
+      "name": "notion.query_database",
+      "server": "notion",
+      "tool": "query_database",
+      "description": "Query a Notion database with filters.",
+      "args": "database_id, filter",
+      "embed_text": "notion.query_database: Query a Notion database with filters. Args: database_id, filter."
+    },
+    {
+      "name": "jira.create_issue",
+      "server": "jira",
+      "tool": "create_issue",
+      "description": "Create a Jira issue.",
+      "args": "project, summary, type",
+      "embed_text": "jira.create_issue: Create a Jira issue. Args: project, summary, type."
+    },
+    {
+      "name": "jira.search_issues",
+      "server": "jira",
+      "tool": "search_issues",
+      "description": "Search Jira issues using JQL.",
+      "args": "jql",
+      "embed_text": "jira.search_issues: Search Jira issues using JQL. Args: jql."
+    },
+    {
+      "name": "jira.transition_issue",
+      "server": "jira",
+      "tool": "transition_issue",
+      "description": "Move a Jira issue to a new status.",
+      "args": "issue_key, transition",
+      "embed_text": "jira.transition_issue: Move a Jira issue to a new status. Args: issue_key, transition."
+    },
+    {
+      "name": "jira.add_comment",
+      "server": "jira",
+      "tool": "add_comment",
+      "description": "Add a comment to a Jira issue.",
+      "args": "issue_key, body",
+      "embed_text": "jira.add_comment: Add a comment to a Jira issue. Args: issue_key, body."
+    },
+    {
+      "name": "calendar.create_event",
+      "server": "calendar",
+      "tool": "create_event",
+      "description": "Create a calendar event with start/end and attendees.",
+      "args": "title, start, end, attendees",
+      "embed_text": "calendar.create_event: Create a calendar event with start/end and attendees. Args: title, start, end, attendees."
+    },
+    {
+      "name": "calendar.list_events",
+      "server": "calendar",
+      "tool": "list_events",
+      "description": "List upcoming calendar events.",
+      "args": "time_min, time_max",
+      "embed_text": "calendar.list_events: List upcoming calendar events. Args: time_min, time_max."
+    },
+    {
+      "name": "calendar.cancel_event",
+      "server": "calendar",
+      "tool": "cancel_event",
+      "description": "Cancel a scheduled calendar event.",
+      "args": "event_id",
+      "embed_text": "calendar.cancel_event: Cancel a scheduled calendar event. Args: event_id."
+    },
+    {
+      "name": "calendar.find_free_time",
+      "server": "calendar",
+      "tool": "find_free_time",
+      "description": "Find a free time slot for a meeting given attendees.",
+      "args": "attendees, duration",
+      "embed_text": "calendar.find_free_time: Find a free time slot for a meeting given attendees. Args: attendees, duration."
+    },
+    {
+      "name": "stripe.create_customer",
+      "server": "stripe",
+      "tool": "create_customer",
+      "description": "Create a Stripe customer record.",
+      "args": "email, name",
+      "embed_text": "stripe.create_customer: Create a Stripe customer record. Args: email, name."
+    },
+    {
+      "name": "stripe.create_charge",
+      "server": "stripe",
+      "tool": "create_charge",
+      "description": "Charge a payment method via Stripe.",
+      "args": "customer_id, amount, currency",
+      "embed_text": "stripe.create_charge: Charge a payment method via Stripe. Args: customer_id, amount, currency."
+    },
+    {
+      "name": "stripe.list_subscriptions",
+      "server": "stripe",
+      "tool": "list_subscriptions",
+      "description": "List active Stripe subscriptions.",
+      "args": "customer_id",
+      "embed_text": "stripe.list_subscriptions: List active Stripe subscriptions. Args: customer_id."
+    },
+    {
+      "name": "stripe.refund_charge",
+      "server": "stripe",
+      "tool": "refund_charge",
+      "description": "Issue a refund for a Stripe charge.",
+      "args": "charge_id, amount",
+      "embed_text": "stripe.refund_charge: Issue a refund for a Stripe charge. Args: charge_id, amount."
+    },
+    {
+      "name": "sentry.list_issues",
+      "server": "sentry",
+      "tool": "list_issues",
+      "description": "List Sentry error issues for a project.",
+      "args": "project, status",
+      "embed_text": "sentry.list_issues: List Sentry error issues for a project. Args: project, status."
+    },
+    {
+      "name": "sentry.get_issue",
+      "server": "sentry",
+      "tool": "get_issue",
+      "description": "Fetch a single Sentry issue with stack traces.",
+      "args": "issue_id",
+      "embed_text": "sentry.get_issue: Fetch a single Sentry issue with stack traces. Args: issue_id."
+    },
+    {
+      "name": "sentry.resolve_issue",
+      "server": "sentry",
+      "tool": "resolve_issue",
+      "description": "Mark a Sentry issue as resolved.",
+      "args": "issue_id",
+      "embed_text": "sentry.resolve_issue: Mark a Sentry issue as resolved. Args: issue_id."
+    },
+    {
+      "name": "datadog.query_metrics",
+      "server": "datadog",
+      "tool": "query_metrics",
+      "description": "Query Datadog time series metrics.",
+      "args": "query, from, to",
+      "embed_text": "datadog.query_metrics: Query Datadog time series metrics. Args: query, from, to."
+    },
+    {
+      "name": "datadog.list_monitors",
+      "server": "datadog",
+      "tool": "list_monitors",
+      "description": "List Datadog monitors and their state.",
+      "args": "tags",
+      "embed_text": "datadog.list_monitors: List Datadog monitors and their state. Args: tags."
+    },
+    {
+      "name": "datadog.search_logs",
+      "server": "datadog",
+      "tool": "search_logs",
+      "description": "Search Datadog logs by query.",
+      "args": "query, from, to",
+      "embed_text": "datadog.search_logs: Search Datadog logs by query. Args: query, from, to."
+    },
+    {
+      "name": "kubernetes.list_pods",
+      "server": "kubernetes",
+      "tool": "list_pods",
+      "description": "List Kubernetes pods in a namespace.",
+      "args": "namespace",
+      "embed_text": "kubernetes.list_pods: List Kubernetes pods in a namespace. Args: namespace."
+    },
+    {
+      "name": "kubernetes.get_logs",
+      "server": "kubernetes",
+      "tool": "get_logs",
+      "description": "Stream logs from a Kubernetes pod.",
+      "args": "namespace, pod, container",
+      "embed_text": "kubernetes.get_logs: Stream logs from a Kubernetes pod. Args: namespace, pod, container."
+    },
+    {
+      "name": "kubernetes.describe_pod",
+      "server": "kubernetes",
+      "tool": "describe_pod",
+      "description": "Get detailed status of a Kubernetes pod.",
+      "args": "namespace, pod",
+      "embed_text": "kubernetes.describe_pod: Get detailed status of a Kubernetes pod. Args: namespace, pod."
+    },
+    {
+      "name": "kubernetes.apply_manifest",
+      "server": "kubernetes",
+      "tool": "apply_manifest",
+      "description": "Apply a Kubernetes manifest YAML.",
+      "args": "manifest",
+      "embed_text": "kubernetes.apply_manifest: Apply a Kubernetes manifest YAML. Args: manifest."
+    },
+    {
+      "name": "docker.list_containers",
+      "server": "docker",
+      "tool": "list_containers",
+      "description": "List Docker containers (running or all).",
+      "args": "all",
+      "embed_text": "docker.list_containers: List Docker containers (running or all). Args: all."
+    },
+    {
+      "name": "docker.inspect_container",
+      "server": "docker",
+      "tool": "inspect_container",
+      "description": "Get full details of a Docker container.",
+      "args": "container_id",
+      "embed_text": "docker.inspect_container: Get full details of a Docker container. Args: container_id."
+    },
+    {
+      "name": "docker.container_logs",
+      "server": "docker",
+      "tool": "container_logs",
+      "description": "Read logs from a Docker container.",
+      "args": "container_id",
+      "embed_text": "docker.container_logs: Read logs from a Docker container. Args: container_id."
+    },
+    {
+      "name": "aws_s3.list_buckets",
+      "server": "aws_s3",
+      "tool": "list_buckets",
+      "description": "List S3 buckets in the AWS account.",
+      "args": "",
+      "embed_text": "aws_s3.list_buckets: List S3 buckets in the AWS account."
+    },
+    {
+      "name": "aws_s3.list_objects",
+      "server": "aws_s3",
+      "tool": "list_objects",
+      "description": "List objects in an S3 bucket prefix.",
+      "args": "bucket, prefix",
+      "embed_text": "aws_s3.list_objects: List objects in an S3 bucket prefix. Args: bucket, prefix."
+    },
+    {
+      "name": "aws_s3.get_object",
+      "server": "aws_s3",
+      "tool": "get_object",
+      "description": "Download an S3 object's contents.",
+      "args": "bucket, key",
+      "embed_text": "aws_s3.get_object: Download an S3 object's contents. Args: bucket, key."
+    },
+    {
+      "name": "aws_s3.put_object",
+      "server": "aws_s3",
+      "tool": "put_object",
+      "description": "Upload content to an S3 object.",
+      "args": "bucket, key, content",
+      "embed_text": "aws_s3.put_object: Upload content to an S3 object. Args: bucket, key, content."
+    },
+    {
+      "name": "weather.current_weather",
+      "server": "weather",
+      "tool": "current_weather",
+      "description": "Get current weather for a location.",
+      "args": "location",
+      "embed_text": "weather.current_weather: Get current weather for a location. Args: location."
+    },
+    {
+      "name": "weather.forecast",
+      "server": "weather",
+      "tool": "forecast",
+      "description": "Get a multi-day weather forecast.",
+      "args": "location, days",
+      "embed_text": "weather.forecast: Get a multi-day weather forecast. Args: location, days."
+    }
+  ],
+  "count": 99
+}
