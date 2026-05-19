@@ -1,0 +1,128 @@
+"""100 hand-written held-out queries for eval. NEVER bootstrap these."""
+import json
+from pathlib import Path
+
+HELDOUT: list[dict] = [
+    # research (10)
+    {"query": "what are the latest developments on the EU AI Act this week", "ground_truth": ["brave_search.news_search"], "category": "research", "min_k": 1},
+    {"query": "look up the Wikipedia page for transformer architectures", "ground_truth": ["brave_search.web_search", "fetch.fetch_text"], "category": "research", "min_k": 2},
+    {"query": "pull the abstract from arxiv.org/abs/2402.03300", "ground_truth": ["fetch.fetch_text"], "category": "research", "min_k": 1},
+    {"query": "is it going to rain in Boston on Saturday", "ground_truth": ["weather.forecast"], "category": "research", "min_k": 1},
+    {"query": "current temperature in San Francisco please", "ground_truth": ["weather.current_weather"], "category": "research", "min_k": 1},
+    {"query": "research who founded Mistral AI and when", "ground_truth": ["brave_search.web_search"], "category": "research", "min_k": 1},
+    {"query": "what's the current S&P 500 level", "ground_truth": ["brave_search.web_search"], "category": "research", "min_k": 1},
+    {"query": "summarize the latest NeurIPS best paper announcements", "ground_truth": ["brave_search.news_search", "fetch.fetch_text"], "category": "research", "min_k": 2},
+    {"query": "what does Hacker News say about Mojo lang today", "ground_truth": ["brave_search.web_search"], "category": "research", "min_k": 1},
+    {"query": "give me a recent news roundup about Apple's vision pro sales", "ground_truth": ["brave_search.news_search"], "category": "research", "min_k": 1},
+    # code_search (10)
+    {"query": "where in the codebase do we handle CORS configuration", "ground_truth": ["filesystem.search_files", "filesystem.read_file"], "category": "code_search", "min_k": 2},
+    {"query": "show me everything inside src/auth/", "ground_truth": ["filesystem.list_directory"], "category": "code_search", "min_k": 1},
+    {"query": "what's in our root README", "ground_truth": ["filesystem.read_file"], "category": "code_search", "min_k": 1},
+    {"query": "find all calls to deprecated_function across our repos on github", "ground_truth": ["github.search_code"], "category": "code_search", "min_k": 1},
+    {"query": "which test files were modified in the last day", "ground_truth": ["filesystem.search_files", "filesystem.get_file_info"], "category": "code_search", "min_k": 2},
+    {"query": "open the package.json file", "ground_truth": ["filesystem.read_file"], "category": "code_search", "min_k": 1},
+    {"query": "list the tests/ directory", "ground_truth": ["filesystem.list_directory"], "category": "code_search", "min_k": 1},
+    {"query": "find usages of `useAuth` hook in our github org", "ground_truth": ["github.search_code"], "category": "code_search", "min_k": 1},
+    {"query": "find migration files modified this month", "ground_truth": ["filesystem.search_files", "filesystem.get_file_info"], "category": "code_search", "min_k": 2},
+    {"query": "read the contents of config.yaml", "ground_truth": ["filesystem.read_file"], "category": "code_search", "min_k": 1},
+    # file_ops (10)
+    {"query": "move old_log.txt to archive/", "ground_truth": ["filesystem.move_file"], "category": "file_ops", "min_k": 1},
+    {"query": "create an empty CHANGELOG.md", "ground_truth": ["filesystem.write_file"], "category": "file_ops", "min_k": 1},
+    {"query": "make a backups subfolder under data/", "ground_truth": ["filesystem.create_directory"], "category": "file_ops", "min_k": 1},
+    {"query": "change all occurrences of 'foo' to 'bar' in main.py", "ground_truth": ["filesystem.edit_file"], "category": "file_ops", "min_k": 1},
+    {"query": "rename README.md to README.old.md", "ground_truth": ["filesystem.move_file"], "category": "file_ops", "min_k": 1},
+    {"query": "download the s3 object key 'reports/q1.pdf' from bucket 'corp-docs' and save it locally", "ground_truth": ["aws_s3.get_object", "filesystem.write_file"], "category": "file_ops", "min_k": 2},
+    {"query": "upload all png files in screenshots/ to my s3 bucket called 'media'", "ground_truth": ["filesystem.list_directory", "filesystem.read_file", "aws_s3.put_object"], "category": "file_ops", "min_k": 3},
+    {"query": "create a new directory `experiments` and inside it a file called notes.txt with 'kickoff'", "ground_truth": ["filesystem.create_directory", "filesystem.write_file"], "category": "file_ops", "min_k": 2},
+    {"query": "edit pyproject.toml to bump version to 0.3.0", "ground_truth": ["filesystem.edit_file"], "category": "file_ops", "min_k": 1},
+    {"query": "what's the size of the file results.json", "ground_truth": ["filesystem.get_file_info"], "category": "file_ops", "min_k": 1},
+    # comms (10)
+    {"query": "ping #devops with 'production deploy starting in 5'", "ground_truth": ["slack.post_message"], "category": "comms", "min_k": 1},
+    {"query": "check what was said in the #incidents thread last started 2 hours ago and reply with status", "ground_truth": ["slack.get_channel_history", "slack.reply_to_thread"], "category": "comms", "min_k": 2},
+    {"query": "react with :eyes: to the last message in #design", "ground_truth": ["slack.get_channel_history", "slack.add_reaction"], "category": "comms", "min_k": 2},
+    {"query": "compose an email to my mom saying I'll call tonight", "ground_truth": ["gmail.send_email"], "category": "comms", "min_k": 1},
+    {"query": "find emails from carol@vendor.com in the last week", "ground_truth": ["gmail.search_emails"], "category": "comms", "min_k": 1},
+    {"query": "save a draft email to legal@company.com about the new contract", "ground_truth": ["gmail.create_draft"], "category": "comms", "min_k": 1},
+    {"query": "show me all my unread emails", "ground_truth": ["gmail.list_emails"], "category": "comms", "min_k": 1},
+    {"query": "search Slack for any messages mentioning 'p0 outage'", "ground_truth": ["slack.search_messages"], "category": "comms", "min_k": 1},
+    {"query": "list the public channels in our slack workspace", "ground_truth": ["slack.list_channels"], "category": "comms", "min_k": 1},
+    {"query": "label the latest email from billing as 'Receipts'", "ground_truth": ["gmail.list_emails", "gmail.label_email"], "category": "comms", "min_k": 2},
+    # db (10)
+    {"query": "select count(*) from events for yesterday", "ground_truth": ["postgres.query"], "category": "db", "min_k": 1},
+    {"query": "what's the schema of the payments table", "ground_truth": ["postgres.describe_table"], "category": "db", "min_k": 1},
+    {"query": "list every table in the public schema", "ground_truth": ["postgres.list_tables"], "category": "db", "min_k": 1},
+    {"query": "explain plan for: select * from users where email like '%@gmail.com'", "ground_truth": ["postgres.explain"], "category": "db", "min_k": 1},
+    {"query": "average order value by month for this year", "ground_truth": ["postgres.query"], "category": "db", "min_k": 1},
+    {"query": "how many active subscriptions exist in stripe vs postgres mismatch", "ground_truth": ["postgres.query", "stripe.list_subscriptions"], "category": "db", "min_k": 2},
+    {"query": "find rows in the users table where last_login is null and create linear issues for the support team to follow up", "ground_truth": ["postgres.query", "linear.create_issue"], "category": "db", "min_k": 2},
+    {"query": "describe the orders table structure", "ground_truth": ["postgres.describe_table"], "category": "db", "min_k": 1},
+    {"query": "run select 1 to test the postgres connection", "ground_truth": ["postgres.query"], "category": "db", "min_k": 1},
+    {"query": "is the index on users.email being used by this query: select * from users where email = 'x'", "ground_truth": ["postgres.explain"], "category": "db", "min_k": 1},
+    # deploy (10)
+    {"query": "tail logs from web-frontend in staging", "ground_truth": ["kubernetes.list_pods", "kubernetes.get_logs"], "category": "deploy", "min_k": 2},
+    {"query": "show pods that aren't Ready in default namespace", "ground_truth": ["kubernetes.list_pods"], "category": "deploy", "min_k": 1},
+    {"query": "describe the failing pod api-server-xyz", "ground_truth": ["kubernetes.describe_pod"], "category": "deploy", "min_k": 1},
+    {"query": "apply ./k8s/cron.yaml to my cluster", "ground_truth": ["filesystem.read_file", "kubernetes.apply_manifest"], "category": "deploy", "min_k": 2},
+    {"query": "list all running docker containers", "ground_truth": ["docker.list_containers"], "category": "deploy", "min_k": 1},
+    {"query": "show me logs from the postgres container", "ground_truth": ["docker.list_containers", "docker.container_logs"], "category": "deploy", "min_k": 2},
+    {"query": "inspect docker container abc123", "ground_truth": ["docker.inspect_container"], "category": "deploy", "min_k": 1},
+    {"query": "which datadog monitors are alerting right now", "ground_truth": ["datadog.list_monitors"], "category": "deploy", "min_k": 1},
+    {"query": "find the pod running the redis container in production namespace", "ground_truth": ["kubernetes.list_pods"], "category": "deploy", "min_k": 1},
+    {"query": "deploy the new manifest in deployment.yaml — read it first then apply", "ground_truth": ["filesystem.read_file", "kubernetes.apply_manifest"], "category": "deploy", "min_k": 2},
+    # scheduling (10)
+    {"query": "what's the local time in Bengaluru", "ground_truth": ["time.get_current_time"], "category": "scheduling", "min_k": 1},
+    {"query": "convert 3pm PT to IST", "ground_truth": ["time.convert_timezone"], "category": "scheduling", "min_k": 1},
+    {"query": "set a reminder for me to take meds at 9pm tonight", "ground_truth": ["time.schedule_reminder"], "category": "scheduling", "min_k": 1},
+    {"query": "do alice and bob have any overlapping free time tomorrow afternoon", "ground_truth": ["calendar.find_free_time"], "category": "scheduling", "min_k": 1},
+    {"query": "schedule a 1:1 with my manager next Tuesday at 10am", "ground_truth": ["calendar.create_event"], "category": "scheduling", "min_k": 1},
+    {"query": "cancel my 4pm meeting today", "ground_truth": ["calendar.list_events", "calendar.cancel_event"], "category": "scheduling", "min_k": 2},
+    {"query": "what's on my calendar this week", "ground_truth": ["calendar.list_events"], "category": "scheduling", "min_k": 1},
+    {"query": "remind me to submit timesheet on Friday at 5pm", "ground_truth": ["time.schedule_reminder"], "category": "scheduling", "min_k": 1},
+    {"query": "what timezone offset is Sydney from UTC right now", "ground_truth": ["time.get_current_time"], "category": "scheduling", "min_k": 1},
+    {"query": "block 9-11am tomorrow on my calendar as focus time", "ground_truth": ["calendar.create_event"], "category": "scheduling", "min_k": 1},
+    # debugging (10)
+    {"query": "what error spikes did sentry catch overnight in the api project", "ground_truth": ["sentry.list_issues"], "category": "debugging", "min_k": 1},
+    {"query": "give me the stack trace for sentry issue ABC-9876", "ground_truth": ["sentry.get_issue"], "category": "debugging", "min_k": 1},
+    {"query": "mark sentry issue 4321 resolved", "ground_truth": ["sentry.resolve_issue"], "category": "debugging", "min_k": 1},
+    {"query": "what's the p95 request latency on /api/login in the last 6 hours", "ground_truth": ["datadog.query_metrics"], "category": "debugging", "min_k": 1},
+    {"query": "any datadog monitors firing right now", "ground_truth": ["datadog.list_monitors"], "category": "debugging", "min_k": 1},
+    {"query": "search datadog logs for 5xx responses in production today", "ground_truth": ["datadog.search_logs"], "category": "debugging", "min_k": 1},
+    {"query": "is there a memory leak — show me ram usage trends for api-server", "ground_truth": ["datadog.query_metrics"], "category": "debugging", "min_k": 1},
+    {"query": "find the last 10 errors from the payments service and create a linear ticket grouping them", "ground_truth": ["sentry.list_issues", "linear.create_issue"], "category": "debugging", "min_k": 2},
+    {"query": "what's the error rate for /checkout endpoint over the last hour", "ground_truth": ["datadog.query_metrics"], "category": "debugging", "min_k": 1},
+    {"query": "look up sentry issue 555 and tell me how many users it affected", "ground_truth": ["sentry.get_issue"], "category": "debugging", "min_k": 1},
+    # web (10)
+    {"query": "fetch html of techcrunch.com homepage right now", "ground_truth": ["fetch.fetch_html"], "category": "web", "min_k": 1},
+    {"query": "search the web for 'rust async runtime comparison'", "ground_truth": ["brave_search.web_search"], "category": "web", "min_k": 1},
+    {"query": "any indian restaurants near Times Square", "ground_truth": ["brave_search.local_search"], "category": "web", "min_k": 1},
+    {"query": "pull the readable text from the URL https://example.org/about", "ground_truth": ["fetch.fetch_text"], "category": "web", "min_k": 1},
+    {"query": "google for 'kubernetes ingress nginx vs traefik'", "ground_truth": ["brave_search.web_search"], "category": "web", "min_k": 1},
+    {"query": "what gyms are near my office in midtown Manhattan", "ground_truth": ["brave_search.local_search"], "category": "web", "min_k": 1},
+    {"query": "fetch https://www.python.org/downloads/ and tell me the latest version listed", "ground_truth": ["fetch.fetch_text"], "category": "web", "min_k": 1},
+    {"query": "look up reviews of the new MacBook Pro", "ground_truth": ["brave_search.web_search"], "category": "web", "min_k": 1},
+    {"query": "find a tutorial for setting up nvm on macOS", "ground_truth": ["brave_search.web_search"], "category": "web", "min_k": 1},
+    {"query": "grab the raw html of a blog post at https://danluu.com/working-knowledge/", "ground_truth": ["fetch.fetch_html"], "category": "web", "min_k": 1},
+    # multi_step (10)
+    {"query": "scan sentry for unresolved issues in the payments project, fetch each user's email from postgres, and send them a 'we're investigating' note", "ground_truth": ["sentry.list_issues", "postgres.query", "gmail.send_email"], "category": "multi_step", "min_k": 3},
+    {"query": "list github prs older than 7 days and DM each author on slack to nudge them", "ground_truth": ["github.list_pull_requests", "slack.post_message"], "category": "multi_step", "min_k": 2},
+    {"query": "every issue assigned to me in linear, create a matching github issue", "ground_truth": ["linear.list_issues", "github.create_issue"], "category": "multi_step", "min_k": 2},
+    {"query": "search Notion for the runbook on db failover, post the link in #ops, and create a calendar event for a tabletop exercise", "ground_truth": ["notion.search_pages", "slack.post_message", "calendar.create_event"], "category": "multi_step", "min_k": 3},
+    {"query": "find emails this week mentioning 'refund', open the stripe charge for each, and refund it", "ground_truth": ["gmail.search_emails", "stripe.list_subscriptions", "stripe.refund_charge"], "category": "multi_step", "min_k": 3},
+    {"query": "from datadog logs find any 'OutOfMemoryError', map them to k8s pods, and describe each pod", "ground_truth": ["datadog.search_logs", "kubernetes.list_pods", "kubernetes.describe_pod"], "category": "multi_step", "min_k": 3},
+    {"query": "list the open prs in mycompany/web, find the slack handle for each author in our users table, and ping them", "ground_truth": ["github.list_pull_requests", "postgres.query", "slack.post_message"], "category": "multi_step", "min_k": 3},
+    {"query": "summarize today's design.com google doc, save it as a notion page, and email the link to the team", "ground_truth": ["gdrive.search_drive", "gdrive.read_doc", "notion.create_page", "gmail.send_email"], "category": "multi_step", "min_k": 4},
+    {"query": "find all unresolved sentry issues, attach datadog log links for the relevant time window, and create a linear epic", "ground_truth": ["sentry.list_issues", "datadog.search_logs", "linear.create_issue"], "category": "multi_step", "min_k": 3},
+    {"query": "look up the calendar invite for tomorrow's 'launch review', pull related notion pages, fetch the latest sentry stats, and email the bundle to founders", "ground_truth": ["calendar.list_events", "notion.search_pages", "sentry.list_issues", "gmail.send_email"], "category": "multi_step", "min_k": 4},
+]
+
+
+def write_heldout(out: Path) -> None:
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", encoding="utf-8") as f:
+        for q in HELDOUT:
+            f.write(json.dumps(q) + "\n")
+
+
+if __name__ == "__main__":
+    write_heldout(Path("data/synthetic/heldout.jsonl"))
+    print(f"Wrote {len(HELDOUT)} held-out queries")
