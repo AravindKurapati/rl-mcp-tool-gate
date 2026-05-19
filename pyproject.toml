@@ -1,0 +1,35 @@
+[project]
+name = "rl-mcp-tool-gate"
+version = "0.1.0"
+description = "RL-trained pre-flight gate for MCP tool selection"
+requires-python = ">=3.11"
+dependencies = [
+    "torch>=2.2",
+    "transformers>=4.40",
+    "sentence-transformers>=3.0",
+    "peft>=0.11",
+    "accelerate>=0.30",
+    "datasets>=2.20",
+    "rank-bm25>=0.2",
+    "mcp>=1.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "httpx>=0.27",
+    "tomli>=2.0",
+    "numpy>=1.26",
+    "scikit-learn>=1.5",
+    "matplotlib>=3.9",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "ruff>=0.5"]
+modal = ["modal>=0.64"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

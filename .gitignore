@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.modal/
+data/raw_mcp_schemas/
+data/afr_replay/*.db
+data/afr_replay/sessions.jsonl
+checkpoints/
+results/
+*.log
+.DS_Store
