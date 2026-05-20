@@ -19,7 +19,7 @@ def grpo_step(
     k_target: int,
     kl_coef: float,
     ref_scores: torch.Tensor | None,  # (N,) or None
-    score_scale: float = 20.0,
+    score_scale: float = 10.0,
 ) -> tuple[torch.Tensor, dict]:
     """One GRPO update step for a single query."""
     # Cosine sim, scaled so softmax has meaningful gradient
