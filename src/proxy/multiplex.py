@@ -69,10 +69,13 @@ class Multiplexer:
     def __init__(self, upstreams: list[Upstream]):
         self.upstreams = [UpstreamProxy(u) for u in upstreams]
         self._by_name: dict[str, UpstreamProxy] = {}
+        self._stack = AsyncExitStack()
 
     async def start(self) -> None:
+        # Own each upstream's lifecycle in a single shared stack entered in THIS task,
+        # so all anyio cancel scopes are exited LIFO in the same task on teardown.
         for u in self.upstreams:
-            await u.connect()
+            await self._stack.enter_async_context(_managed(u))
             self._by_name[u.spec.name] = u
 
     def all_tools(self) -> list[NamespacedTool]:
@@ -86,5 +89,23 @@ class Multiplexer:
         return await up.call(tool, arguments)
 
     async def stop(self) -> None:
-        for u in self.upstreams:
-            await u.close()
+        await self._stack.aclose()
+
+    async def __aenter__(self) -> "Multiplexer":
+        await self.start()
+        return self
+
+    async def __aexit__(self, *exc) -> None:
+        await self.stop()
+
+
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def _managed(up: "UpstreamProxy"):
+    await up.connect()
+    try:
+        yield up
+    finally:
+        await up.close()

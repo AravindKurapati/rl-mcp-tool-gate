@@ -21,6 +21,13 @@ class GateEncoder:
         self.tok = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModel.from_pretrained(model_name).to(self.device).eval()
         if lora_adapter_path is not None:
+            # peft >=0.19 accesses torch.distributed.tensor.DTensor without importing the
+            # lazy submodule first; on torch >=2.10 that raises AttributeError. Force-import.
+            try:
+                import importlib
+                importlib.import_module("torch.distributed.tensor")
+            except Exception:
+                pass
             from peft import PeftModel
             self.model = PeftModel.from_pretrained(self.model, str(lora_adapter_path)).eval()
         self._catalog_embeds: np.ndarray | None = None
