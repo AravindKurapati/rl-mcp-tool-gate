@@ -27,16 +27,22 @@ def _expand(s: str) -> str:
 
 
 def load_config(path: Path) -> ProxyConfig:
+    path = Path(path).resolve()
     with path.open("rb") as f:
         raw = tomllib.load(f)
     upstreams = []
     for u in raw.get("upstreams", []):
         env = {k: _expand(v) for k, v in u.get("env", {}).items()}
         upstreams.append(Upstream(name=u["name"], command=list(u["command"]), env=env))
+    # Resolve a relative gate_checkpoint against the config file's directory so the
+    # LoRA loads regardless of the process cwd (Claude Code spawns from the project root).
+    ckpt = raw.get("gate_checkpoint", "")
+    if ckpt and not Path(ckpt).is_absolute():
+        ckpt = str((path.parent / ckpt).resolve())
     return ProxyConfig(
         budget_tokens=int(raw.get("budget_tokens", 4000)),
         top_k=int(raw.get("top_k", 12)),
-        gate_checkpoint=raw.get("gate_checkpoint", ""),
+        gate_checkpoint=ckpt,
         control_channel_port=int(raw.get("control_channel_port", 17800)),
         upstreams=upstreams,
     )
