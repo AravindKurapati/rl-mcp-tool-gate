@@ -1,0 +1,20 @@
+# Example proxy config: which upstream MCP servers to wrap.
+# Each upstream is launched as a subprocess speaking stdio JSON-RPC.
+
+budget_tokens = 4000
+top_k = 12
+gate_checkpoint = "checkpoints/run1"   # or "" to use off-the-shelf BGE
+control_channel_port = 17800           # for Claude Code hook (B2 mode)
+
+[[upstreams]]
+name = "filesystem"
+command = ["npx", "-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
+
+[[upstreams]]
+name = "fetch"
+command = ["uvx", "mcp-server-fetch"]
+
+[[upstreams]]
+name = "github"
+command = ["npx", "-y", "@modelcontextprotocol/server-github"]
+env = { GITHUB_PERSONAL_ACCESS_TOKEN = "${GITHUB_PERSONAL_ACCESS_TOKEN}" }
