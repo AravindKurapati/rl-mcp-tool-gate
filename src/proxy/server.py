@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -55,7 +56,7 @@ async def build_server(config_path: Path):
     cfg = load_config(config_path)
     mux = Multiplexer(cfg.upstreams)
     await mux.start()
-    print(f"Connected {len(cfg.upstreams)} upstreams, {len(mux.all_tools())} total tools", flush=True)
+    print(f"Connected {len(cfg.upstreams)} upstreams, {len(mux.all_tools())} total tools", file=sys.stderr, flush=True)
 
     ckpt_path = Path(cfg.gate_checkpoint) if cfg.gate_checkpoint else None
     encoder = GateEncoder(lora_adapter_path=ckpt_path if (ckpt_path and ckpt_path.exists()) else None)
