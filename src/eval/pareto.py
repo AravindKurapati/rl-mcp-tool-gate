@@ -53,26 +53,6 @@ def eval_qwen_from_file(preds_path: Path, queries: list[dict]) -> dict:
     }}}
 
 
-def afr_coverage(sessions_path: Path, predict_fn, catalog: list[dict], top_k: int = 10) -> dict:
-    if not sessions_path.exists():
-        return {"method": "afr_replay", "skipped": "no afr db"}
-    sessions = [json.loads(l) for l in sessions_path.read_text(encoding="utf-8").splitlines()]
-    covered, savings = [], []
-    avg_tool_tokens = sum(len(t["embed_text"]) // 4 for t in catalog) / max(1, len(catalog))
-    for s in sessions:
-        sel = predict_fn(s["initial_prompt"], catalog, top_k=top_k)
-        sel_names = {t["name"] for t in sel}
-        called = set(s["tools_called"])
-        covered.append(called.issubset(sel_names))
-        savings.append((len(catalog) - len(sel)) * avg_tool_tokens)
-    return {
-        "method": "afr_replay",
-        "coverage": float(sum(covered) / max(1, len(covered))),
-        "mean_token_savings": float(sum(savings) / max(1, len(savings))),
-        "n_sessions": len(sessions),
-    }
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--heldout", default="data/synthetic/heldout.jsonl")
@@ -103,9 +83,8 @@ def main():
     if Path(args.qwen_preds).exists():
         out_all.append(eval_qwen_from_file(Path(args.qwen_preds), queries))
 
-    afr_path = Path("data/afr_replay/sessions.jsonl")
-    if afr_path.exists() and ckpt_path.exists():
-        out_all.append(afr_coverage(afr_path, lambda q, c, top_k: baseline_bge(q, c, enc_rl, top_k=top_k), catalog, top_k=10))
+    # Real-traffic (afr) eval lives in src/eval/afr_eval.py — kept separate so this
+    # script stays purely synthetic.
 
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out).write_text(json.dumps(out_all, indent=2), encoding="utf-8")

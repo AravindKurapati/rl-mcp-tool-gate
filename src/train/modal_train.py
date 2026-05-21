@@ -30,6 +30,10 @@ def train(
     lora_r: int = 16,
     lora_alpha: int = 32,
     out_dir: str = "/ckpts/run1",
+    catalog_file: str = "catalog.json",
+    train_file: str = "train.jsonl",
+    val_frac: float = 0.1,
+    eval_every: int = 25,
 ):
     import sys, json
     from pathlib import Path
@@ -58,14 +62,20 @@ def train(
     model.train()
     optim = torch.optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
 
-    cat = json.loads(Path("/root/data/synthetic/catalog.json").read_text(encoding="utf-8"))["tools"]
+    cat = json.loads(Path(f"/root/data/synthetic/{catalog_file}").read_text(encoding="utf-8"))["tools"]
     tool_names = [t["name"] for t in cat]
     name_to_idx = {n: i for i, n in enumerate(tool_names)}
     catalog_size = len(cat)
     catalog_texts = [t["embed_text"] for t in cat]
 
-    train_data = [json.loads(l) for l in Path("/root/data/synthetic/train.jsonl").read_text(encoding="utf-8").splitlines()]
-    train_data = [t for t in train_data if all(g in name_to_idx for g in t["ground_truth"])]
+    all_data = [json.loads(l) for l in Path(f"/root/data/synthetic/{train_file}").read_text(encoding="utf-8").splitlines()]
+    all_data = [t for t in all_data if all(g in name_to_idx for g in t["ground_truth"])]
+    # Hold out a val split for early stopping (overfitting is the failure mode here).
+    rng_split = np.random.default_rng(7)
+    perm = rng_split.permutation(len(all_data))
+    n_val = max(1, int(len(all_data) * val_frac))
+    val_data = [all_data[i] for i in perm[:n_val]]
+    train_data = [all_data[i] for i in perm[n_val:]]
 
     def encode_batch(texts, mdl):
         enc = tok(texts, padding=True, truncation=True, max_length=256, return_tensors="pt").to(device)
@@ -76,9 +86,29 @@ def train(
     with torch.no_grad():
         ref_catalog_emb = encode_batch(catalog_texts, ref)
 
+    def val_recall() -> float:
+        # Deterministic top-k recall on the val split — the early-stopping signal.
+        model.eval()
+        with torch.no_grad():
+            cat_emb = encode_batch(catalog_texts, model)
+            hits = []
+            for item in val_data:
+                gt = {name_to_idx[g] for g in item["ground_truth"]}
+                q = encode_batch([item["query"]], model)
+                scores = (q @ cat_emb.T).squeeze(0)
+                k = min(catalog_size, max(item["min_k"], 1) + 4)
+                topk = set(torch.topk(scores, k).indices.tolist())
+                hits.append(len(gt & topk) / len(gt))
+        model.train()
+        return float(np.mean(hits))
+
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(42)
     history = []
     reward_ema = None
+    best_val = -1.0
+    best_step = -1
 
     for step in range(n_steps):
         # Encode catalog WITH gradient each step so both sides of the bi-encoder train.
@@ -120,22 +150,30 @@ def train(
         optim.step()
 
         reward_ema = info_acc["mean_reward"] if reward_ema is None else 0.95 * reward_ema + 0.05 * info_acc["mean_reward"]
-        history.append({"step": step, "loss": float(total_loss.detach()), "reward_ema": reward_ema, **info_acc})
-        if step % 20 == 0:
-            print(f"step={step} loss={float(total_loss):.4f} mean_r={info_acc['mean_reward']:.3f} ema={reward_ema:.3f} pg={info_acc['pg_loss']:.3f} kl={info_acc['kl_loss']:.3f}", flush=True)
+        rec = {"step": step, "loss": float(total_loss.detach()), "reward_ema": reward_ema, **info_acc}
 
-    out = Path(out_dir)
-    out.mkdir(parents=True, exist_ok=True)
-    model.save_pretrained(str(out))
+        if step % eval_every == 0 or step == n_steps - 1:
+            vr = val_recall()
+            rec["val_recall"] = vr
+            if vr > best_val:
+                best_val = vr
+                best_step = step
+                model.save_pretrained(str(out))  # keep the best-on-val checkpoint
+                vol.commit()
+            print(f"step={step} loss={float(total_loss):.4f} ema={reward_ema:.3f} "
+                  f"kl={info_acc['kl_loss']:.3f} val_recall={vr:.3f} (best={best_val:.3f}@{best_step})", flush=True)
+        history.append(rec)
+
     (out / "history.json").write_text(json.dumps(history), encoding="utf-8")
     vol.commit()
-    print(f"Saved checkpoint to {out_dir}", flush=True)
+    print(f"Best val_recall={best_val:.3f} at step {best_step}; checkpoint saved to {out_dir}", flush=True)
     # Return reward EMA trajectory (start, mid, end) for the local entrypoint to print
     n = len(history)
     return {
         "ema_start": history[min(10, n - 1)]["reward_ema"],
-        "ema_mid": history[n // 2]["reward_ema"],
         "ema_end": history[-1]["reward_ema"],
+        "best_val_recall": best_val,
+        "best_step": best_step,
     }
 
 
@@ -149,3 +187,16 @@ def smoke(n_steps: int = 150):
 def full():
     res = train.remote(n_steps=1000, lr=1e-4, n_samples=8, out_dir="/ckpts/run1")
     print("Reward EMA trajectory:", res)
+
+
+@app.local_entrypoint()
+def v2(n_steps: int = 800):
+    # Distribution-matched, regularized retrain: real-format tools in the catalog,
+    # lower LoRA rank + stronger KL (anti-forgetting), early stopping on val recall.
+    res = train.remote(
+        n_steps=n_steps, lr=1e-4, n_samples=8,
+        kl_coef=0.05, lora_r=8, lora_alpha=16,
+        catalog_file="catalog_v2.json", train_file="train_v2.jsonl",
+        out_dir="/ckpts/run2",
+    )
+    print("v2 result:", res)

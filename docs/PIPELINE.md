@@ -217,11 +217,32 @@ non-breaking rate@12: off-the-shelf **0.27** vs RL **0.15**. This is a classic
 catalog's phrasing and embed-text format and lost generality the base BGE retains.
 Real goals are long and messy and the real MCP tools were never in training.
 
-This is reported as-is, not hidden. The headline synthetic numbers in `README.md`
-are valid **in-distribution**; they do not transfer to this user's real traffic. The
-real-traffic eval exists precisely to catch this. Fix paths (not yet applied): train
-on real-format tool names + messier queries, lower LoRA rank / stronger KL, and
-re-examine whether the synthetic eval is inflated by shared train/eval distribution.
+This was reported as-is, not hidden. The real-traffic eval exists precisely to catch
+this.
+
+**The fix (v2 — `checkpoints/run2`).** Diagnosed against the LoRA-forgetting
+literature (Biderman et al. "LoRA Learns Less and Forgets Less"; "When Fine-Tuning
+Fails: MS MARCO"), which shows fine-tuning a saturated retriever like BGE can disrupt
+its embedding geometry. Three changes (`src/data_gen/real_tools.py`, `build_v2.py`,
+`modal_train.py::v2`):
+1. **Distribution match** — added the real-format tools (`mcp__exa__*`,
+   `mcp__github__*`) to the catalog *and* the training set (130 realistic real-tool
+   queries). The v1 model had learned synthetic names (`brave_search.web_search`) for
+   capabilities that appear in real traffic under different names.
+2. **Anti-forgetting regularization** — LoRA rank 16→8, KL 0.02→0.05 (kept α=2r).
+3. **Early stopping** on a held-out val-recall split (save best, not last).
+
+**Outcome (honest):**
+- *In-distribution* (synthetic held-out incl. real-tool queries): v2 RL beats
+  off-the-shelf at every budget — recall@8 **0.785 vs 0.720**, @12 **0.853 vs 0.756**.
+- *Real OOD traffic*: v2 now **matches** off-the-shelf at deployment budgets
+  (recall@8 0.228 vs 0.223; @5 0.157 vs 0.111), **fixing v1's collapse** (v1 @8 was
+  0.071). It does not decisively beat BGE on real traffic — the predicted ceiling,
+  since real goals average ~1.8 tools (mostly retrieval, where BGE is already strong)
+  and the eval catalog includes synthetic distractors the real setup lacked.
+
+Net: RL is a clear, validated win in-distribution and is no longer worse than
+off-the-shelf on real traffic. The eval→diagnose→fix→re-validate loop is the point.
 
 `results/afr_eval.json` carries both the MCP-domain block and an `all_tools_session_level`
 block (a deliberately harsh, transparent baseline that conflates a whole multi-turn
