@@ -11,3 +11,8 @@ checkpoints/
 results/
 *.log
 .DS_Store
+
+CLAUDE.md
+AGENTS.md
+
+upstreams.toml
