@@ -81,7 +81,15 @@ def _block(sessions, synthetic, ckpt, k_sweep, mcp_only: bool) -> dict:
     if ckpt.exists():
         enc_rl = GateEncoder(lora_adapter_path=ckpt)
         enc_rl.precompute_catalog(catalog)
-        results.append(_eval_encoder("bge_rl", enc_rl, sessions, catalog, k_sweep, mcp_only=mcp_only))
+        # Label by the checkpoint directory so SFT runs are not mislabeled as RL.
+        ckpt_label = ckpt.name.lower()
+        if "sft" in ckpt_label:
+            method = "bge_sft"
+        elif "run2" in ckpt_label or "v2" in ckpt_label:
+            method = "bge_rl_v2"
+        else:
+            method = "bge_rl"
+        results.append(_eval_encoder(method, enc_rl, sessions, catalog, k_sweep, mcp_only=mcp_only))
     n_eval = results[0]["by_k"][k_sweep[0]]["n_runs"]
     return {"catalog_size": len(catalog), "n_runs_evaluated": n_eval, "results": results}
 
