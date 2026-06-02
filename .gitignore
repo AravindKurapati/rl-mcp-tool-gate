@@ -16,3 +16,10 @@ CLAUDE.md
 AGENTS.md
 
 upstreams.toml
+
+# Private rolling log and any per-session/feature/result notes at repo root
+LOG.md
+/SESSION_*.md
+/FEATURE_*.md
+/RESULT_*.md
+/ANALYSIS_*.md

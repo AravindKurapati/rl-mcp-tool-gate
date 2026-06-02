@@ -119,7 +119,5 @@ python -m pytest -q   # 51 tests
 
 ## More
 
-- `docs/PIPELINE.md` for the full v1 to v2 to SFT walkthrough
-- `docs/RESULT_sft_baseline.md` for the SFT numbers and sanity checks
-- `docs/ANALYSIS_sft_vs_rl.md` for the interpretation
-- `docs/FUTURE_bandit_pivot.md` for the online bandit framing if this work continues
+- `SCHEMA.md` documents the local SQLite store written by the proxy
+- Decision-log reader and bandit-dataset materializer in `src/eval/decision_log.py`
